@@ -144,23 +144,16 @@ public class ChiTietSanPhamController {
     }
     @PostMapping("/add")
     public ResponseEntity<?> add(@Valid @RequestBody ChiTietSanPhamRequest chiTietSanPhamRequest) {
-        chiTietSanPhamRequest.setMa(chiTietSanPhamRequest.getMa().trim());
+        // Chuẩn hóa số ngày sử dụng
         chiTietSanPhamRequest.setSoNgaySuDung(chiTietSanPhamRequest.getSoNgaySuDung().trim());
 
-        // Kiểm tra mã và tạo mã mới nếu mã không được cung cấp
-        if (chiTietSanPhamRequest.getMa() == null || chiTietSanPhamRequest.getMa().isEmpty()) {
-            String generatedMa;
-            do {
-                String randomString = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
-                generatedMa = "CTSP" + randomString;
-            } while (chiTietSanPhamRepository.getByMa(generatedMa) != null);
-            chiTietSanPhamRequest.setMa(generatedMa);
-        } else if (!Pattern.matches("^CTSP[A-Z0-9]{6}$", chiTietSanPhamRequest.getMa().trim())) {
-            return ResponseEntity.badRequest().body("Mã phải có định dạng CTSPXXXXXX (X là chữ cái hoặc số)!");
-        } else if (chiTietSanPhamRepository.getByMa(chiTietSanPhamRequest.getMa().trim()) != null) {
-            return ResponseEntity.badRequest().body("Mã chi tiết sản phẩm không được trùng!");
-        }
+        String generatedMa;
+        do {
+            String randomString = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+            generatedMa = "CTSP" + randomString;
+        } while (chiTietSanPhamRepository.getByMa(generatedMa) != null);
 
+        // Kiểm tra sản phẩm đã tồn tại
         ChiTietSanPham existingChiTietSanPham = chiTietSanPhamRepository.trungCTSP(
                 chiTietSanPhamRequest.getIdSP(),
                 chiTietSanPhamRequest.getSoNgaySuDung(),
@@ -168,17 +161,21 @@ public class ChiTietSanPhamController {
                 chiTietSanPhamRequest.getHsd(),
                 chiTietSanPhamRequest.getGia());
 
+        // Cập nhật số lượng nếu sản phẩm đã tồn tại
         if (existingChiTietSanPham != null) {
             existingChiTietSanPham.setSoLuong(existingChiTietSanPham.getSoLuong() + chiTietSanPhamRequest.getSoLuong());
             chiTietSanPhamRepository.save(existingChiTietSanPham);
             return ResponseEntity.ok("Sản phẩm đã tồn tại, số lượng đã được cập nhật!");
         }
 
+        // Tạo mới chi tiết sản phẩm
         ChiTietSanPham chiTietSanPham = new ChiTietSanPham();
         BeanUtils.copyProperties(chiTietSanPhamRequest, chiTietSanPham);
+        chiTietSanPham.setMa(generatedMa);
         chiTietSanPham.setNgayTao(LocalDateTime.now());
         chiTietSanPham.setNgaySua(null);
 
+        // Kiểm tra và thiết lập sản phẩm
         if (chiTietSanPhamRequest.getIdSP() != null) {
             SanPham sanPham = sanPhamRepository.findById(chiTietSanPhamRequest.getIdSP()).orElse(null);
             if (sanPham == null) {
@@ -186,9 +183,12 @@ public class ChiTietSanPhamController {
             }
             chiTietSanPham.setSanPham(sanPham);
         }
+
+        // Lưu chi tiết sản phẩm vào repository
         chiTietSanPhamRepository.save(chiTietSanPham);
         return ResponseEntity.ok("Thêm mới chi tiết sản phẩm thành công!");
     }
+
 
 
     @PutMapping("/update")

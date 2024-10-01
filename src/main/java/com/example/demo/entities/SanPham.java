@@ -51,8 +51,8 @@
         private String moTa;
 
         @ManyToOne
-        @JoinColumn(name = "idLoaiSP")
-        private LoaiSanPham loaiSanPham;
+        @JoinColumn(name = "idDanhMuc")
+        private DanhMuc danhMuc;
 
         @ManyToOne
         @JoinColumn(name = "idThuongHieu")
@@ -65,6 +65,6 @@
         public SanPhamResponse toResponse(){
             return new SanPhamResponse(id, maSP,tenSP,thanhPhan,congDung,tuoiMin,tuoiMax,
                     ngayTao,ngaySua, trangThai,moTa,
-                    loaiSanPham.getTen(), thuongHieu.getTen(),giamGia.getTen());
+                    danhMuc.getTen(), thuongHieu.getTen(),giamGia.getTen());
         }
     }

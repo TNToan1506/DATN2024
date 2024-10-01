@@ -1,9 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.entities.LoaiSanPham;
 import com.example.demo.entities.SanPham;
-import com.example.demo.entities.ThuongHieu;
-import com.example.demo.repositories.LoaiSanPhamRepository;
+import com.example.demo.repositories.DanhMucRepository;
+import com.example.demo.repositories.GiamGiaRepository;
 import com.example.demo.repositories.SanPhamRepository;
 import com.example.demo.repositories.ThuongHieuRepository;
 import com.example.demo.request.SanPhamRequest;
@@ -27,9 +26,11 @@ public class SanPhamController {
     @Autowired
     SanPhamRepository sanPhamRepository;
     @Autowired
-    LoaiSanPhamRepository loaiSanPhamRepository;
+    DanhMucRepository danhMucRepository;
     @Autowired
     ThuongHieuRepository thuongHieuRepository;
+    @Autowired
+    GiamGiaRepository giamGiaRepository;
     @GetMapping()
     public ResponseEntity<?> getAll() {
         Sort sort = Sort.by(Sort.Direction.DESC, "ngayTao");
@@ -73,40 +74,28 @@ public class SanPhamController {
         if (sanPhamRepository.getByName(sanPhamRequest.getTenSP().trim())!=null){
             return ResponseEntity.badRequest().body("Tên sản phẩm không được trùng!");
         }
-        String maSanPham = sanPhamRequest.getMaSP();
-        if (maSanPham == null || maSanPham.trim().isEmpty()) {
-            String prefix = "SP";
-            String uniqueID;
-            do {
-                uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-            } while (sanPhamRepository.getByMa(prefix + uniqueID) != null);
-            maSanPham = prefix + uniqueID;
-        } else {
-            maSanPham = maSanPham.trim();
-            if (!Pattern.matches("^SP[A-Z0-9]{8}$", maSanPham)) {
-                return ResponseEntity.badRequest().body("Mã sản phẩm phải có định dạng SPXXXXXXXX (X là chữ cái hoặc số)!");
-            }
-            if (sanPhamRepository.getByMa(maSanPham) != null) {
-                return ResponseEntity.badRequest().body("Mã sản phẩm không được trùng!");
-            }
+        String maSanPham = "SP" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        while (sanPhamRepository.getByMa(maSanPham) != null) {
+            maSanPham = "SP" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        }
+        if (danhMucRepository.findById(sanPhamRequest.getIdDanhMuc().trim()).isEmpty()) {
+            return ResponseEntity.badRequest().body("Không tìm thấy danh mục có id: " + sanPhamRequest.getIdDanhMuc().trim());
         }
 
-        if (loaiSanPhamRepository.findById(sanPhamRequest.getIdSanPham()).isEmpty()) {
-            return ResponseEntity.badRequest().body("Không tìm thấy loại sản phẩm có id: " + sanPhamRequest.getIdSanPham());
+        if (thuongHieuRepository.findById(sanPhamRequest.getIdThuongHieu().trim()).isEmpty()) {
+            return ResponseEntity.badRequest().body("Không tìm thấy thương hiệu có id: " + sanPhamRequest.getIdThuongHieu().trim());
         }
-
-        if (thuongHieuRepository.findById(sanPhamRequest.getIdThuongHieu()).isEmpty()) {
-            return ResponseEntity.badRequest().body("Không tìm thấy thương hiệu có id: " + sanPhamRequest.getIdThuongHieu());
+        if (giamGiaRepository.findById(sanPhamRequest.getIdGiamGia().trim()).isEmpty()){
+            return ResponseEntity.badRequest().body("Không tìm thấy giảm giá có id: " + sanPhamRequest.getIdGiamGia().trim());
         }
-
         SanPham sanPham = new SanPham();
         BeanUtils.copyProperties(sanPhamRequest, sanPham);
         sanPham.setMaSP(maSanPham);
         sanPham.setNgayTao(LocalDateTime.now());
         sanPham.setNgaySua(null);
-        sanPham.setLoaiSanPham(loaiSanPhamRepository.getById(sanPhamRequest.getIdSanPham()));
-        sanPham.setThuongHieu(thuongHieuRepository.getById(sanPhamRequest.getIdThuongHieu()));
-
+        sanPham.setDanhMuc(danhMucRepository.getById(sanPhamRequest.getIdDanhMuc().trim()));
+        sanPham.setThuongHieu(thuongHieuRepository.getById(sanPhamRequest.getIdThuongHieu().trim()));
+        sanPham.setGiamGia(giamGiaRepository.getById(sanPhamRequest.getIdGiamGia().trim()));
         sanPhamRepository.save(sanPham);
         return ResponseEntity.ok("Thêm sản phẩm thành công!");
     }
@@ -117,7 +106,7 @@ public class SanPhamController {
         if (id == null || id.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("ID không được để trống.");
         }
-        Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id);
+        Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id.trim());
 
         if (optionalSanPham.isEmpty()) {
             return ResponseEntity.badRequest().body("Không tìm thấy sản phẩm có id: " + id);
@@ -125,33 +114,26 @@ public class SanPhamController {
         if (sanPhamRepository.getByNameAndId(sanPhamRequest.getTenSP().trim(),id)!=null){
             return ResponseEntity.badRequest().body("Tên sản phẩm không được trùng!");
         }
-//        String maSanPham = sanPhamRequest.getMaSP();
-//        if (maSanPham != null && !maSanPham.trim().isEmpty()) {
-//            maSanPham = maSanPham.trim();
-//            if (!Pattern.matches("^SP[A-Z0-9]{8}$", maSanPham)) {
-//                return ResponseEntity.badRequest().body("Mã sản phẩm phải có định dạng SPXXXXXXXX (X là chữ cái hoặc số)!");
-//            }
-//            if (sanPhamRepository.getByMaAndId(maSanPham,id) != null) {
-//                return ResponseEntity.badRequest().body("Mã sản phẩm không được trùng!");
-//            }
-//        }
         if (sanPhamRequest.getTuoiMin() > sanPhamRequest.getTuoiMax()) {
                 return ResponseEntity.badRequest().body("Tuổi tối thiểu không được lớn hơn tuổi tối đa!");
         }
 
-        if (loaiSanPhamRepository.findById(sanPhamRequest.getIdSanPham()).isEmpty()) {
-            return ResponseEntity.badRequest().body("Không tìm thấy loại sản phẩm có id: " + sanPhamRequest.getIdSanPham());
+        if (danhMucRepository.findById(sanPhamRequest.getIdDanhMuc().trim()).isEmpty()) {
+            return ResponseEntity.badRequest().body("Không tìm thấy loại sản phẩm có id: " + sanPhamRequest.getIdDanhMuc().trim());
         }
 
-        if (thuongHieuRepository.findById(sanPhamRequest.getIdThuongHieu()).isEmpty()) {
-            return ResponseEntity.badRequest().body("Không tìm thấy thương hiệu có id: " + sanPhamRequest.getIdThuongHieu());
+        if (thuongHieuRepository.findById(sanPhamRequest.getIdThuongHieu().trim()).isEmpty()) {
+            return ResponseEntity.badRequest().body("Không tìm thấy thương hiệu có id: " + sanPhamRequest.getIdThuongHieu().trim());
         }
-
+        if (giamGiaRepository.findById(sanPhamRequest.getIdGiamGia().trim()).isEmpty()){
+            return ResponseEntity.badRequest().body("Không tìm thấy giảm giá có id: " + sanPhamRequest.getIdGiamGia().trim());
+        }
         SanPham existingSanPham = optionalSanPham.get();
         BeanUtils.copyProperties(sanPhamRequest, existingSanPham, "id", "ngayTao","maSP");
         existingSanPham.setNgaySua(LocalDateTime.now());
-        existingSanPham.setLoaiSanPham(loaiSanPhamRepository.getById(sanPhamRequest.getIdSanPham()));
-        existingSanPham.setThuongHieu(thuongHieuRepository.getById(sanPhamRequest.getIdThuongHieu()));
+        existingSanPham.setDanhMuc(danhMucRepository.getById(sanPhamRequest.getIdDanhMuc().trim()));
+        existingSanPham.setThuongHieu(thuongHieuRepository.getById(sanPhamRequest.getIdThuongHieu().trim()));
+        existingSanPham.setGiamGia(giamGiaRepository.getById(sanPhamRequest.getIdGiamGia().trim()));
 
         sanPhamRepository.save(existingSanPham);
         return ResponseEntity.ok("Cập nhật sản phẩm thành công!");

@@ -69,29 +69,22 @@ public class DanhMucController {
         danhMuc.setNgayTao(LocalDateTime.now());
         danhMuc.setNgaySua(null);
 
-        if (danhMucRepository.getByName(danhMuc.getTen().trim())!=null){
+        // Kiểm tra tên danh mục
+        if (danhMucRepository.getByName(danhMuc.getTen().trim()) != null) {
             return ResponseEntity.badRequest().body("Tên danh mục không được trùng!");
         }
-        if (danhMuc.getMa() == null || danhMuc.getMa().trim().isEmpty()) {
-            String prefix = "DM";
-            String uniqueID;
-            do {
-                uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-            } while (danhMucRepository.getByMa(prefix + uniqueID) != null);
-            danhMuc.setMa(prefix + uniqueID);
-        } else {
-            if (!Pattern.matches("^DM[A-Z0-9]{8}$", danhMuc.getMa().trim())) {
-                return ResponseEntity.badRequest().body("Mã phải có định dạng DMXXXXXXXX (X là chữ cái hoặc số)!");
-            }
-            if (danhMucRepository.getByMa(danhMuc.getMa().trim()) != null) {
-                return ResponseEntity.badRequest().body("Mã danh mục không được trùng!");
-            }
-        }
 
+        String prefix = "DM";
+        String uniqueID;
+        do {
+            uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        } while (danhMucRepository.getByMa(prefix + uniqueID) != null);
+        danhMuc.setMa(prefix + uniqueID);
 
         danhMucRepository.save(danhMuc);
         return ResponseEntity.ok("Thêm danh mục thành công!");
     }
+
     @PutMapping("/update")
     public ResponseEntity<?> update(@Valid @RequestBody DanhMuc danhMuc, @RequestBody Map<String, String> body) {
         String id = body.get("id");
@@ -101,24 +94,9 @@ public class DanhMucController {
         if (danhMucRepository.getByNameAndId(id, danhMuc.getTen().trim()) != null) {
             return ResponseEntity.badRequest().body("Tên danh mục không được trùng!");
         }
-        if (danhMuc.getMa() == null || danhMuc.getMa().trim().isEmpty()) {
-            String prefix = "DM";
-            String uniqueID;
-            do {
-                uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-            } while (danhMucRepository.getByMa(prefix + uniqueID) != null);
-            danhMuc.setMa(prefix + uniqueID);
-        } else {
-            if (!Pattern.matches("^DM[A-Z0-9]{8}$", danhMuc.getMa().trim())) {
-                return ResponseEntity.badRequest().body("Mã phải có định dạng DMXXXXXXXX (X là chữ cái hoặc số)!");
-            }
-            if (danhMucRepository.getByMa(danhMuc.getMa().trim()) != null && !danhMucRepository.getByMa(danhMuc.getMa().trim()).getId().equals(id)) {
-                return ResponseEntity.badRequest().body("Mã danh mục không được trùng!");
-            }
-        }
         DanhMuc danhMucUpdate = danhMucRepository.getReferenceById(id);
         danhMucUpdate.setNgaySua(LocalDateTime.now());
-        BeanUtils.copyProperties(danhMuc, danhMucUpdate, "id", "ngayTao", "ma"); // Giữ nguyên ngày tạo
+        BeanUtils.copyProperties(danhMuc, danhMucUpdate, "id", "ngayTao", "ma"); // Giữ nguyên ngày tạo, mã
         danhMucRepository.save(danhMucUpdate);
         return ResponseEntity.ok("Cập nhật danh mục thành công!");
     }

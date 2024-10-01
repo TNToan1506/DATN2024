@@ -58,25 +58,13 @@ public class ThuongHieuController {
     }
     @PostMapping("/add")
     public ResponseEntity<?> add(@Valid @RequestBody ThuongHieuRequest thuongHieuRequest) {
-        if (thuongHieuRepository.getByName(thuongHieuRequest.getTen().trim())!=null){
+        if (thuongHieuRepository.getByName(thuongHieuRequest.getTen().trim()) != null) {
             return ResponseEntity.badRequest().body("Tên không được trùng!");
         }
-        String maThuongHieu = thuongHieuRequest.getMa();
-        if (maThuongHieu == null || maThuongHieu.trim().isEmpty()) {
-            String prefix = "TH";
-            String uniqueID;
-            do {
-                uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-            } while (thuongHieuRepository.getByMa(prefix + uniqueID) != null);
-            maThuongHieu = prefix + uniqueID;
-        } else {
-            maThuongHieu = maThuongHieu.trim();
-            if (!Pattern.matches("^TH[A-Z0-9]{8}$", maThuongHieu)) {
-                return ResponseEntity.badRequest().body("Mã thương hiệu phải có định dạng THXXXXXXXX (X là chữ cái hoặc số)!");
-            }
-            if (thuongHieuRepository.getByMa(maThuongHieu) != null) {
-                return ResponseEntity.badRequest().body("Mã không được trùng!");
-            }
+
+        String maThuongHieu = "TH" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        while (thuongHieuRepository.getByMa(maThuongHieu) != null) {
+            maThuongHieu = "TH" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
         }
 
         ThuongHieu thuongHieu = new ThuongHieu();
@@ -105,16 +93,7 @@ public class ThuongHieuController {
             return ResponseEntity.badRequest().body("Tên không được trùng!");
         }
 
-//        String maThuongHieu = thuongHieuRequest.getMa();
-//        if (maThuongHieu != null && !maThuongHieu.trim().isEmpty()) {
-//            maThuongHieu = maThuongHieu.trim();
-//            if (!Pattern.matches("^TH[A-Z0-9]{8}$", maThuongHieu)) {
-//                return ResponseEntity.badRequest().body("Mã thương hiệu phải có định dạng THXXXXXXXX (X là chữ cái hoặc số)!");
-//            }
-//            if (thuongHieuRepository.getByIdAndMa(id, maThuongHieu) != null) {
-//                return ResponseEntity.badRequest().body("Mã không được trùng!");
-//            }
-//        }
+
 
         ThuongHieu thuongHieuUpdate = optionalThuongHieu.get();
         BeanUtils.copyProperties(thuongHieuRequest, thuongHieuUpdate, "id", "ngayTao","ma");
