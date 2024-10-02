@@ -17,7 +17,7 @@
     public class SanPham {
         @Id
         @Column(name = "id")
-        private String id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        private String id  ;
 
         @Column(name = "ma")
         private String maSP;
@@ -62,9 +62,32 @@
         @JoinColumn(name = "idGiamGia")
         private GiamGia giamGia;
 
-        public SanPhamResponse toResponse(){
-            return new SanPhamResponse(id, maSP,tenSP,thanhPhan,congDung,tuoiMin,tuoiMax,
-                    ngayTao,ngaySua, trangThai,moTa,
-                    danhMuc.getTen(), thuongHieu.getTen(),giamGia.getTen());
+        @PrePersist
+        public void prePersist() {
+            if (this.id == null) {
+                this.id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            }
         }
+
+        public SanPhamResponse toResponse() {
+            String giamGiaTen = (giamGia != null) ? giamGia.getTen() : null; // Kiểm tra giamGia có null không
+
+            return new SanPhamResponse(
+                    id,
+                    maSP,
+                    tenSP,
+                    thanhPhan,
+                    congDung,
+                    tuoiMin,
+                    tuoiMax,
+                    ngayTao,
+                    ngaySua,
+                    trangThai,
+                    moTa,
+                    danhMuc.getTen(),
+                    thuongHieu.getTen(),
+                    giamGiaTen // Truyền giá trị giamGiaTen vào response
+            );
+        }
+
     }

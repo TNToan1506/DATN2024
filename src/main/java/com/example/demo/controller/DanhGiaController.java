@@ -69,8 +69,8 @@ public class DanhGiaController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody DanhGiaRequest danhGiaRequest, @RequestBody Map<String, String> body) {
-        String id = body.get("id");
+    public ResponseEntity<?> update(@Valid @RequestBody DanhGiaRequest danhGiaRequest) {
+        String id = danhGiaRequest.getId();
         if (id == null || id.isEmpty()) {
             return ResponseEntity.badRequest().body("ID không được để trống.");
         }

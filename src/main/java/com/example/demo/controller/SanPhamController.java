@@ -42,7 +42,7 @@ public class SanPhamController {
         PageRequest pageRequest = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "ngayTao"));
         return ResponseEntity.ok(sanPhamRepository.findAll(pageRequest));
     }
-    @PostMapping("/detail")
+    @GetMapping("/detail")
     public ResponseEntity<?> detail(@RequestBody Map<String, String> body) {
         String id = body.get("id");
         if (id == null || id.trim().isEmpty()) {
@@ -71,6 +71,7 @@ public class SanPhamController {
     }
     @PostMapping("/add")
     public ResponseEntity<?> add(@Valid @RequestBody SanPhamRequest sanPhamRequest) {
+        SanPham sanPham = new SanPham();
         if (sanPhamRepository.getByName(sanPhamRequest.getTenSP().trim())!=null){
             return ResponseEntity.badRequest().body("Tên sản phẩm không được trùng!");
         }
@@ -85,24 +86,30 @@ public class SanPhamController {
         if (thuongHieuRepository.findById(sanPhamRequest.getIdThuongHieu().trim()).isEmpty()) {
             return ResponseEntity.badRequest().body("Không tìm thấy thương hiệu có id: " + sanPhamRequest.getIdThuongHieu().trim());
         }
-        if (giamGiaRepository.findById(sanPhamRequest.getIdGiamGia().trim()).isEmpty()){
-            return ResponseEntity.badRequest().body("Không tìm thấy giảm giá có id: " + sanPhamRequest.getIdGiamGia().trim());
+        if (sanPhamRequest.getIdGiamGia()==null){
+            sanPham.setGiamGia(null);
         }
-        SanPham sanPham = new SanPham();
+        else if (sanPhamRequest.getIdGiamGia()!=null&giamGiaRepository.findById(sanPhamRequest.getIdGiamGia()).isEmpty()){
+            return ResponseEntity.badRequest().body("Không tìm thấy giảm giá có id: " + sanPhamRequest.getIdGiamGia());
+        }
+
         BeanUtils.copyProperties(sanPhamRequest, sanPham);
+
         sanPham.setMaSP(maSanPham);
         sanPham.setNgayTao(LocalDateTime.now());
         sanPham.setNgaySua(null);
         sanPham.setDanhMuc(danhMucRepository.getById(sanPhamRequest.getIdDanhMuc().trim()));
         sanPham.setThuongHieu(thuongHieuRepository.getById(sanPhamRequest.getIdThuongHieu().trim()));
-        sanPham.setGiamGia(giamGiaRepository.getById(sanPhamRequest.getIdGiamGia().trim()));
+        if (sanPhamRequest.getIdGiamGia()!=null){
+            sanPham.setGiamGia(giamGiaRepository.getById(sanPhamRequest.getIdGiamGia().trim()));
+        }
         sanPhamRepository.save(sanPham);
         return ResponseEntity.ok("Thêm sản phẩm thành công!");
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody SanPhamRequest sanPhamRequest,@RequestBody Map<String, String> body) {
-        String id = body.get("id");
+    public ResponseEntity<?> update(@Valid @RequestBody SanPhamRequest sanPhamRequest) {
+        String id = sanPhamRequest.getId();
         if (id == null || id.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("ID không được để trống.");
         }
@@ -125,7 +132,10 @@ public class SanPhamController {
         if (thuongHieuRepository.findById(sanPhamRequest.getIdThuongHieu().trim()).isEmpty()) {
             return ResponseEntity.badRequest().body("Không tìm thấy thương hiệu có id: " + sanPhamRequest.getIdThuongHieu().trim());
         }
-        if (giamGiaRepository.findById(sanPhamRequest.getIdGiamGia().trim()).isEmpty()){
+        if (sanPhamRequest.getIdGiamGia()==null){
+            optionalSanPham.get().setGiamGia(null);
+        }
+        else if (giamGiaRepository.findById(sanPhamRequest.getIdGiamGia().trim()).isEmpty()){
             return ResponseEntity.badRequest().body("Không tìm thấy giảm giá có id: " + sanPhamRequest.getIdGiamGia().trim());
         }
         SanPham existingSanPham = optionalSanPham.get();
@@ -133,8 +143,9 @@ public class SanPhamController {
         existingSanPham.setNgaySua(LocalDateTime.now());
         existingSanPham.setDanhMuc(danhMucRepository.getById(sanPhamRequest.getIdDanhMuc().trim()));
         existingSanPham.setThuongHieu(thuongHieuRepository.getById(sanPhamRequest.getIdThuongHieu().trim()));
-        existingSanPham.setGiamGia(giamGiaRepository.getById(sanPhamRequest.getIdGiamGia().trim()));
-
+        if (sanPhamRequest.getIdGiamGia()!=null){
+            existingSanPham.setGiamGia(giamGiaRepository.getById(sanPhamRequest.getIdGiamGia().trim()));
+        }
         sanPhamRepository.save(existingSanPham);
         return ResponseEntity.ok("Cập nhật sản phẩm thành công!");
     }

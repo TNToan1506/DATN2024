@@ -20,7 +20,7 @@ public class ChiTietSanPham {
 
     @Id
     @Column(name = "id")
-    private String id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    private String id ;
 
     @Column(name = "ma")
     private String ma;
@@ -61,6 +61,13 @@ public class ChiTietSanPham {
     @ManyToOne
     @JoinColumn(name = "idSP")
     SanPham sanPham;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 
     public ChiTietSanPhamResponse toChiTietSanPhamResponse() {
         return new ChiTietSanPhamResponse(id, ma, gia, soNgaySuDung, hdsd,

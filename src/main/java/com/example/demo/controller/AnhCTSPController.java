@@ -88,8 +88,8 @@ public class AnhCTSPController {
 
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody AnhCTSPRequest anhSPRequest, @RequestBody Map<String, String> body) {
-        String id = body.get("id");
+    public ResponseEntity<?> update(@Valid @RequestBody AnhCTSPRequest anhSPRequest) {
+        String id = anhSPRequest.getId();
         AnhCTSP existingAnhSP = anhCTSPRepository.findById(id).orElse(null);
         if (existingAnhSP == null) {
             return ResponseEntity.badRequest().body("Không tìm thấy ảnh có id: " + id);

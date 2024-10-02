@@ -79,24 +79,24 @@ public class ThuongHieuController {
 
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody Map<String, Object> request) {
-        String id = (String) request.get("id");
-        ThuongHieuRequest thuongHieuRequest = new ThuongHieuRequest();
-        BeanUtils.copyProperties(request, thuongHieuRequest);
+    public ResponseEntity<?> update(@Valid @RequestBody ThuongHieuRequest thuongHieuRequest) {
+        String id = thuongHieuRequest.getId();  // Lấy id từ ThuongHieuRequest
 
         Optional<ThuongHieu> optionalThuongHieu = thuongHieuRepository.findById(id);
         if (optionalThuongHieu.isEmpty()) {
             return ResponseEntity.badRequest().body("Không tìm thấy thương hiệu có id: " + id);
         }
 
-        if (thuongHieuRepository.getByNameAndId(thuongHieuRequest.getTen().trim(), id) != null) {
+        String tenThuongHieu = thuongHieuRequest.getTen().trim();
+        if (thuongHieuRepository.getByNameAndId(tenThuongHieu, id) != null) {
             return ResponseEntity.badRequest().body("Tên không được trùng!");
         }
 
-
-
         ThuongHieu thuongHieuUpdate = optionalThuongHieu.get();
-        BeanUtils.copyProperties(thuongHieuRequest, thuongHieuUpdate, "id", "ngayTao","ma");
+        thuongHieuUpdate.setTen(tenThuongHieu);
+        thuongHieuUpdate.setTrangThai(thuongHieuRequest.getTrangThai());
+        thuongHieuUpdate.setXuatXu(thuongHieuRequest.getXuatXu());
+        thuongHieuUpdate.setMoTa(thuongHieuRequest.getMoTa());
         thuongHieuUpdate.setNgaySua(LocalDateTime.now());
 
         thuongHieuRepository.save(thuongHieuUpdate);

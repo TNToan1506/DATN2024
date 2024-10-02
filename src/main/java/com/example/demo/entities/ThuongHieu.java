@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 @Entity
 @Table(name = "THUONGHIEU")
 @Data
@@ -17,9 +16,9 @@ import java.util.UUID;
 public class ThuongHieu {
     @Id
     @Column(name = "id")
-    private String id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    private String id;
 
-   @Column(name = "ma")
+    @Column(name = "ma")
     private String ma;
 
     @Column(name = "ten")
@@ -40,9 +39,14 @@ public class ThuongHieu {
     @Column(name = "moTa")
     private String moTa;
 
-    public ThuongHieu toResponse(){
-        return new ThuongHieu(id,ma,ten,
-                ngayTao,ngaySua,trangThai,
-                xuatXu,moTa);
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
+
+    public ThuongHieu toResponse() {
+        return new ThuongHieu(id, ma, ten, ngayTao, ngaySua, trangThai, xuatXu, moTa);
     }
 }

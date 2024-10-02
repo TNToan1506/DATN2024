@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class DanhGiaRequest {
 
+    private String id;
+
     @NotNull(message = "Sao không được để trống")
     @ValidInteger
     @Min(value = 1, message = "Sao phải là số dương từ 1 đến 5")

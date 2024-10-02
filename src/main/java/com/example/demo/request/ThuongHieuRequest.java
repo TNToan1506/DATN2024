@@ -20,6 +20,7 @@ public class ThuongHieuRequest {
 //    @Size(max = 10, message = "Mã thương hiệu không được vượt quá 10 ký tự")
 ////    @Pattern(regexp = "^TH[A-Z0-9]{8}$", message = "Mã phải có định dạng THXXXXXXXX (X là chữ cái hoặc số)!")
 //    private String ma;
+    private String id;
 
     @NotBlank(message = "Tên thương hiệu không được để trống")
     @Size(max = 255, message = "Tên thương hiệu không được vượt quá 255 ký tự")

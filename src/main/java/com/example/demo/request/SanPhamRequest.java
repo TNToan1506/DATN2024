@@ -17,6 +17,7 @@
 //        @Size(max = 10, message = "Mã sản phẩm không được vượt quá 10 ký tự")
 ////        @Pattern(regexp = "^SP[A-Z0-9]{8}$", message = "Mã phải có định dạng SPXXXXXXXX (X là chữ cái hoặc số)!")
 //        private String maSP;
+        private String id;
 
         @Size(max = 255, message = "Tên sản phẩm không được vượt quá 255 ký tự")
         @Pattern(regexp = "^[a-zA-Z0-9À-ỹà-ỹ\\s]+$", message = "Tên sản phẩm chỉ được chứa chữ cái, số và khoảng trắng!")

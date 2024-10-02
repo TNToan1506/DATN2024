@@ -17,7 +17,7 @@ import java.util.UUID;
 public class AnhCTSP {
     @Id
     @Column(name = "ID")
-    private String id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    private String id ;
 
     @Column(name = "LINK")
     private String link;
@@ -39,6 +39,12 @@ public class AnhCTSP {
     @JoinColumn(name = "IDCTSP")
     private ChiTietSanPham chiTietSanPham;
 
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
     public AnhCTSPResponse toAnhSPResponse() {
         return new AnhCTSPResponse(
                 id,

@@ -65,5 +65,12 @@ public class GiamGia {
     @Column(name = "trangThai")
     private Integer trangThai;
 
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
+
 
 }

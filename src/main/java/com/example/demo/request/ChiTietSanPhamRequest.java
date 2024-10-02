@@ -17,6 +17,8 @@ public class ChiTietSanPhamRequest {
 ////    @Pattern(regexp = "^CTSP[A-Z0-9]{6}$", message = "Mã phải có định dạng CTSPXXXXXX (X là chữ cái hoặc số)!")
 //    private String ma;
 
+    private String id;
+
     @NotBlank(message = "Giá không được để trống")
     @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "Giá phải là số dương, có thể có tối đa hai chữ số thập phân")
     private String gia;

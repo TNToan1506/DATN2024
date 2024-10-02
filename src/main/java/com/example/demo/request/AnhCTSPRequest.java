@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class AnhCTSPRequest {
+    private String id;
+
     @NotBlank(message = "Link ảnh không được để trống")
     @Size(max = 255, message = "Link ảnh không được vượt quá 255 ký tự")
     private String   link;

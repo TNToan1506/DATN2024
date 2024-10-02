@@ -86,8 +86,8 @@ public class DanhMucController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody DanhMuc danhMuc, @RequestBody Map<String, String> body) {
-        String id = body.get("id");
+    public ResponseEntity<?> update(@Valid @RequestBody DanhMuc danhMuc) {
+        String id = danhMuc.getId();
         if (id == null || id.isEmpty() || danhMucRepository.findById(id).isEmpty()) {
             return ResponseEntity.badRequest().body("Không tìm thấy danh mục có id: " + id);
         }

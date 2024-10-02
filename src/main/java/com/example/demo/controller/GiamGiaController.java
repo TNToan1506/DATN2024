@@ -128,9 +128,9 @@ public class GiamGiaController {
         }
     }
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody GiamGia giamGia, @RequestBody Map<String, String> body) {
-        String id = body.get("id");
-        if (id == null || id.trim().isEmpty()) {
+    public ResponseEntity<?> update(@Valid @RequestBody GiamGia giamGia) {
+        String id = giamGia.getId();
+        if (id == null || id.trim() .isEmpty()) {
             return ResponseEntity.badRequest().body("ID không được để trống.");
         }
         if (giamGiaRepository.findById(id).isEmpty()) {

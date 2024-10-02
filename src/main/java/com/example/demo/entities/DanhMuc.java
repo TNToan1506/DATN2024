@@ -21,7 +21,7 @@ import java.util.UUID;
 public class DanhMuc {
     @Id
     @Column(name = "ID")
-    private String id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    private String id;
 
     @Size(max = 10, message = "Mã danh mục không được vượt quá 10 ký tự")
 //    @Pattern(regexp = "^DM[A-Z0-9]{8}$", message = "Mã phải có định dạng DMXXXXXXXX (X là chữ cái hoặc số)!")
@@ -42,10 +42,18 @@ public class DanhMuc {
     @ValidLocalDateTime
     private LocalDateTime ngaySua;
 
+
     @NotNull(message = "Trạng thái không được để trống")
     @Min(value = 0, message = "Trạng thái không hợp lệ")
     @Max(value = 4, message = "Trạng thái không hợp lệ")
     @ValidInteger
     @Column(name = "TRANGTHAI")
     private Integer trangThai;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 }

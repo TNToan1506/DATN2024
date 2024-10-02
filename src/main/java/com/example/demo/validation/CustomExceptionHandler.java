@@ -15,15 +15,33 @@ public class CustomExceptionHandler {
     public ResponseEntity<String> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         String message = "Dữ liệu đầu vào không hợp lệ.";
 
+        // In chi tiết lỗi để debug
+        ex.printStackTrace(); // hoặc sử dụng logger để log lỗi
+
         // Lấy thông tin chi tiết từ JsonMappingException
         Throwable cause = ex.getCause();
         if (cause instanceof JsonMappingException) {
             JsonMappingException jsonMappingException = (JsonMappingException) cause;
-            String fieldName = jsonMappingException.getPath().isEmpty() ? "unknown field" : jsonMappingException.getPath().get(0).getFieldName();
-            message = "Trường '" + fieldName + "' không hợp lệ: " + jsonMappingException.getOriginalMessage();
+
+            // Lấy thông tin các trường không hợp lệ
+            if (!jsonMappingException.getPath().isEmpty()) {
+                StringBuilder invalidFields = new StringBuilder();
+                for (JsonMappingException.Reference reference : jsonMappingException.getPath()) {
+                    invalidFields.append(reference.getFieldName()).append(", ");
+                }
+
+                // Xóa dấu phẩy cuối cùng và thêm thông báo chi tiết
+                if (invalidFields.length() > 0) {
+                    invalidFields.setLength(invalidFields.length() - 2);
+                    message = "Các trường không hợp lệ: " + invalidFields.toString() + ". " + jsonMappingException.getOriginalMessage();
+                }
+            } else {
+                message = "Dữ liệu JSON không hợp lệ. " + jsonMappingException.getOriginalMessage();
+            }
+        } else {
+            message = "Dữ liệu không thể đọc được. Vui lòng kiểm tra định dạng.";
         }
 
         return ResponseEntity.badRequest().body(message);
     }
-    // Có thể thêm các phương thức xử lý khác ở đây
 }

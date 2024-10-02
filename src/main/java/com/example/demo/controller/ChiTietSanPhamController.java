@@ -192,19 +192,15 @@ public class ChiTietSanPhamController {
 
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody Map<String, Object> request) {
-        String id = (String) request.get("id");
+    public ResponseEntity<?> update(@Valid @RequestBody ChiTietSanPhamRequest chiTietSanPhamRequest) {
+        String id = chiTietSanPhamRequest.getId();
         if (id == null || id.isEmpty()) {
             return ResponseEntity.badRequest().body("ID không được để trống.");
         }
-        ChiTietSanPhamRequest chiTietSanPhamRequest = new ChiTietSanPhamRequest();
-        BeanUtils.copyProperties(request, chiTietSanPhamRequest);
-
         ChiTietSanPham existingChiTietSanPham = chiTietSanPhamRepository.findById(id).orElse(null);
         if (existingChiTietSanPham == null) {
             return ResponseEntity.badRequest().body("Không tìm thấy chi tiết sản phẩm có id: " + id);
         }
-
         BeanUtils.copyProperties(chiTietSanPhamRequest, existingChiTietSanPham, "id", "ma", "ngayTao");
         existingChiTietSanPham.setNgaySua(LocalDateTime.now());
 
