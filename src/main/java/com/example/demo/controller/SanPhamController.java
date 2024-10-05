@@ -126,7 +126,7 @@ public class SanPhamController {
         }
 
         if (danhMucRepository.findById(sanPhamRequest.getIdDanhMuc().trim()).isEmpty()) {
-            return ResponseEntity.badRequest().body("Không tìm thấy loại sản phẩm có id: " + sanPhamRequest.getIdDanhMuc().trim());
+            return ResponseEntity.badRequest().body("Không tìm thấy danh mục có id: " + sanPhamRequest.getIdDanhMuc().trim());
         }
 
         if (thuongHieuRepository.findById(sanPhamRequest.getIdThuongHieu().trim()).isEmpty()) {
