@@ -9,7 +9,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "CHITIETSANPHAM")
@@ -62,6 +65,9 @@ public class ChiTietSanPham {
     @JoinColumn(name = "idSP")
     SanPham sanPham;
 
+    @OneToMany(mappedBy = "chiTietSanPham", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnhCTSP> anhCTSP = new ArrayList<>(); // Danh sách ảnh liên kết
+
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
@@ -70,8 +76,25 @@ public class ChiTietSanPham {
     }
 
     public ChiTietSanPhamResponse toChiTietSanPhamResponse() {
-        return new ChiTietSanPhamResponse(id, ma, gia, soNgaySuDung, hdsd,
-                ngaySanXuat,hsd,ngayNhap,soLuong,trangThai,ngayTao,
-                ngaySua,sanPham.getMaSP());
+        List<String> linkAnhList = anhCTSP != null
+                ? anhCTSP.stream().map(AnhCTSP::getLink).collect(Collectors.toList())
+                : new ArrayList<>(); // Trả về danh sách rỗng nếu không có hình ảnh
+
+        return new ChiTietSanPhamResponse(
+                id,
+                ma,
+                gia,
+                soNgaySuDung,
+                hdsd,
+                ngaySanXuat,
+                hsd,
+                ngayNhap,
+                soLuong,
+                trangThai,
+                ngayTao,
+                ngaySua,
+                sanPham.getMaSP(),
+                 linkAnhList // Include the image link in the response
+        );
     }
 }

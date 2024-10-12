@@ -2,8 +2,10 @@ package com.example.demo.controller;
 
 import com.example.demo.entities.ChiTietSanPham;
 import com.example.demo.entities.DanhGia;
+import com.example.demo.entities.KhachHang;
 import com.example.demo.repositories.ChiTietSanPhamRepository;
 import com.example.demo.repositories.DanhGiaRepository;
+import com.example.demo.repositories.KhachHangRepository;
 import com.example.demo.request.DanhGiaRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("danh-gia")
 public class DanhGiaController {
@@ -26,6 +29,8 @@ public class DanhGiaController {
     private ChiTietSanPhamRepository chiTietSanPhamRepository;
     @Autowired
     private DanhGiaRepository danhGiaRepository;
+    @Autowired
+    private KhachHangRepository khachHangRepository;
 
     @GetMapping()
     public ResponseEntity<?> getAll() {
@@ -58,10 +63,15 @@ public class DanhGiaController {
         if (chiTietSanPham == null) {
             return ResponseEntity.badRequest().body("Không tìm thấy chi tiết sản phẩm có id: " + danhGiaRequest.getIdCTSP());
         }
+        KhachHang khachHang=khachHangRepository.findById(danhGiaRequest.getIdKH()).orElse(null);
+        if (khachHang==null){
+            return ResponseEntity.badRequest().body("Không tìm thấy khách hàng có id: " + danhGiaRequest.getIdKH());
 
+        }
         DanhGia danhGia = new DanhGia();
         BeanUtils.copyProperties(danhGiaRequest, danhGia);
         danhGia.setChiTietSanPham(chiTietSanPham);
+        danhGia.setKhachHang(khachHang);
         danhGia.setNgayDanhGia(LocalDateTime.now());
         danhGia.setNgaySua(null);
         danhGiaRepository.save(danhGia);
@@ -83,9 +93,14 @@ public class DanhGiaController {
         if (chiTietSanPham == null) {
             return ResponseEntity.badRequest().body("Không tìm thấy chi tiết sản phẩm có id: " + danhGiaRequest.getIdCTSP());
         }
+        KhachHang khachHang=khachHangRepository.findById(danhGiaRequest.getIdKH()).orElse(null);
+        if (khachHang==null){
+            return ResponseEntity.badRequest().body("Không tìm thấy khách hàng có id: " + danhGiaRequest.getIdKH());
 
+        }
         BeanUtils.copyProperties(danhGiaRequest, existingDanhGia, "id", "ngayDanhGia");
         existingDanhGia.setChiTietSanPham(chiTietSanPham);
+        existingDanhGia.setKhachHang(khachHang);
         existingDanhGia.setNgaySua(LocalDateTime.now());
 
         danhGiaRepository.save(existingDanhGia);

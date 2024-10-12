@@ -1,8 +1,10 @@
     package com.example.demo.controller;
 
+    import com.example.demo.entities.AnhCTSP;
     import com.example.demo.entities.ChiTietSanPham;
     import com.example.demo.entities.GiamGia;
     import com.example.demo.entities.SanPham;
+    import com.example.demo.repositories.AnhCTSPRepository;
     import com.example.demo.repositories.ChiTietSanPhamRepository;
     import com.example.demo.repositories.GiamGiaRepository;
     import com.example.demo.repositories.SanPhamRepository;
@@ -27,6 +29,7 @@
     import java.util.regex.Pattern;
     import java.util.stream.Collectors;
 
+    @CrossOrigin(origins = "*")
     @RestController
     @RequestMapping("chi-tiet-san-pham")
     public class ChiTietSanPhamController {
@@ -36,31 +39,44 @@
     //    GiamGiaRepository giamGiaRepository;
         @Autowired
         ChiTietSanPhamRepository chiTietSanPhamRepository;
+        @Autowired
+        AnhCTSPRepository anhCTSPRepository;
 
         @GetMapping()
-        public ResponseEntity<?> getAll() {
+        public ResponseEntity<?>getAll(){
             List<ChiTietSanPham> chiTietSanPhams = chiTietSanPhamRepository.findAll(Sort.by(Sort.Order.desc("ngayTao")));
             List<ChiTietSanPhamResponse> responseList = chiTietSanPhams.stream()
                     .map(ChiTietSanPham::toChiTietSanPhamResponse)
                     .collect(Collectors.toList());
-
-            // Kiểm tra các sản phẩm sắp hết hạn
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime sixMonthsFromNow = now.plus(6, ChronoUnit.MONTHS);
-
-            List<ChiTietSanPham> expiringSoonList = chiTietSanPhams.stream()
-                    .filter(ctsp -> ctsp.getHsd() != null && ctsp.getHsd().isBefore(sixMonthsFromNow))
-                    .collect(Collectors.toList());
-
-            if (!expiringSoonList.isEmpty()) {
-                return ResponseEntity.ok(new HashMap<String, Object>() {{
-                    put("products", responseList);
-                    put("message", "Có sản phẩm sắp hết hạn trong vòng 6 tháng. Xem chi tiết tại: /chi-tiet-san-pham/expiring-soon");
-                }});
-            }
-
             return ResponseEntity.ok(responseList);
         }
+
+
+//
+//        @GetMapping()
+//        public ResponseEntity<?> getAll() {
+//            List<ChiTietSanPham> chiTietSanPhams = chiTietSanPhamRepository.findAll(Sort.by(Sort.Order.desc("ngayTao")));
+//            List<ChiTietSanPhamResponse> responseList = chiTietSanPhams.stream()
+//                    .map(ChiTietSanPham::toChiTietSanPhamResponse)
+//                    .collect(Collectors.toList());
+//
+//            // Kiểm tra các sản phẩm sắp hết hạn
+//            LocalDateTime now = LocalDateTime.now();
+//            LocalDateTime sixMonthsFromNow = now.plus(6, ChronoUnit.MONTHS);
+//
+//            List<ChiTietSanPham> expiringSoonList = chiTietSanPhams.stream()
+//                    .filter(ctsp -> ctsp.getHsd() != null && ctsp.getHsd().isBefore(sixMonthsFromNow))
+//                    .collect(Collectors.toList());
+//
+//            if (!expiringSoonList.isEmpty()) {
+//                return ResponseEntity.ok(new HashMap<String, Object>() {{
+//                    put("products", responseList);
+//                    put("message", "Có sản phẩm sắp hết hạn trong vòng 6 tháng. Xem chi tiết tại: /chi-tiet-san-pham/expiring-soon");
+//                }});
+//            }
+//
+//            return ResponseEntity.ok(responseList);
+//        }
 
         @GetMapping("/page")
         public ResponseEntity<?> page(@RequestParam(name = "page", defaultValue = "0") Integer page) {
@@ -143,7 +159,7 @@
             return ResponseEntity.ok(response);
         }
         @PostMapping("/add")
-        public ResponseEntity<?> add(@Valid @RequestBody ChiTietSanPhamRequest chiTietSanPhamRequest) {
+        public ResponseEntity<?> add(@Valid @ModelAttribute ChiTietSanPhamRequest chiTietSanPhamRequest) {
             // Chuẩn hóa số ngày sử dụng
             chiTietSanPhamRequest.setSoNgaySuDung(chiTietSanPhamRequest.getSoNgaySuDung().trim());
 
@@ -186,7 +202,19 @@
 
             // Lưu chi tiết sản phẩm vào repository
             chiTietSanPhamRepository.save(chiTietSanPham);
-            return ResponseEntity.ok("Thêm mới chi tiết sản phẩm thành công!");
+            if (chiTietSanPhamRequest.getLinkAnhList() != null && !chiTietSanPhamRequest.getLinkAnhList().isEmpty()) {
+                for (String link : chiTietSanPhamRequest.getLinkAnhList()) {
+                    AnhCTSP anhCTSP = new AnhCTSP();
+                    anhCTSP.setLink(link);
+                    anhCTSP.setTrangThai(1);
+                    anhCTSP.setNgayTao(LocalDateTime.now());
+                    anhCTSP.setTen("Ảnh của"+chiTietSanPham.getMa());
+                    anhCTSP.setChiTietSanPham(chiTietSanPham); // Thiết lập liên kết với chi tiết sản phẩm
+                    anhCTSPRepository.save(anhCTSP); // Lưu ảnh vào repository
+                }
+            }
+
+            return ResponseEntity.ok("Thêm mới chi tiết sản phẩm và hình ảnh thành công!");
         }
 
 
@@ -217,6 +245,7 @@
             if (id == null || chiTietSanPhamRepository.findById(id).isEmpty()) {
                 return ResponseEntity.badRequest().body("Không tìm thấy CTSP có id: " + id);
             }
+            anhCTSPRepository.deleteByIdCTSP(id);
             chiTietSanPhamRepository.deleteById(id);
             return ResponseEntity.ok("Xóa thành công");
         }

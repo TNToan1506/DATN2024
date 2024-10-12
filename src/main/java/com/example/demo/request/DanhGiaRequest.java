@@ -33,4 +33,8 @@ public class DanhGiaRequest {
 
     @NotNull(message = "IDCTSP không được để trống")
     private String idCTSP;
+
+    @NotNull(message = "IDKH không được để trống")
+    private String idKH;
+
 }

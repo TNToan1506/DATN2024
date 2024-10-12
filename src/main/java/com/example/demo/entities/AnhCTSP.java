@@ -35,7 +35,7 @@ public class AnhCTSP {
     @Column(name = "NGAYSUA")
     private LocalDateTime ngaySua;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "IDCTSP")
     private ChiTietSanPham chiTietSanPham;
 

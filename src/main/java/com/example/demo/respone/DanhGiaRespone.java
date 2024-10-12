@@ -27,4 +27,6 @@ public class DanhGiaRespone {
     private LocalDateTime ngaySua;
 
     private String maCTSP;
+
+    private String maKH;
 }

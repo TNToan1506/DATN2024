@@ -44,6 +44,10 @@ public class DanhGia {
     @JoinColumn(name = "IDCTSP")
     private ChiTietSanPham chiTietSanPham;
 
+    @ManyToOne
+    @JoinColumn(name = "IDKH")
+    private KhachHang khachHang;
+
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
@@ -51,6 +55,6 @@ public class DanhGia {
         }
     }
     public DanhGiaRespone toRespone(){
-        return new DanhGiaRespone(id, sao, nhanXet,trangThai, ngayDanhGia, ngaySua, chiTietSanPham != null ? chiTietSanPham.getMa() : null);
+        return new DanhGiaRespone(id, sao, nhanXet,trangThai, ngayDanhGia, ngaySua, chiTietSanPham != null ? chiTietSanPham.getMa() : null, khachHang.getMa());
     }
 }

@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,4 +26,6 @@ public class ChiTietSanPhamResponse {
     private LocalDateTime ngayTao;
     private LocalDateTime ngaySua;
     private String maSP;
+    private List<String> linkAnhList; // Danh sách liên kết hình ảnh
+
 }

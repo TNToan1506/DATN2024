@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("danh-muc")
 public class DanhMucController {

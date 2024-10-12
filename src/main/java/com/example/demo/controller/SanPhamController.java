@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("san-pham")
 public class SanPhamController {

@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("thuong-hieu")
 public class ThuongHieuController {
