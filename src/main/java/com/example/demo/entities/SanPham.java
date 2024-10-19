@@ -2,11 +2,15 @@
 
     import com.example.demo.respone.SanPhamResponse;
     import jakarta.persistence.*;
+    import jakarta.validation.constraints.NotBlank;
+    import jakarta.validation.constraints.Size;
     import lombok.AllArgsConstructor;
     import lombok.Data;
     import lombok.NoArgsConstructor;
 
     import java.time.LocalDateTime;
+    import java.util.ArrayList;
+    import java.util.List;
     import java.util.UUID;
 
     @Entity
@@ -37,6 +41,9 @@
         @Column(name = "tuoiMax")
         private Integer tuoiMax;
 
+        @Column(name = "hdsd")
+        private String hdsd;
+
         @Column(name = "ngayTao")
         private LocalDateTime ngayTao;
 
@@ -62,6 +69,9 @@
         @JoinColumn(name = "idGiamGia")
         private GiamGia giamGia;
 
+        @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<ChiTietSanPham> listCTSP = new ArrayList<>(); // Danh sách ảnh liên kết
+
         @PrePersist
         public void prePersist() {
             if (this.id == null) {
@@ -70,7 +80,13 @@
         }
 
         public SanPhamResponse toResponse() {
-            String giamGiaTen = (giamGia != null) ? giamGia.getTen() : null; // Kiểm tra giamGia có null không
+            String giamGiaTen = (giamGia != null) ? giamGia.getTen() : null; // Check for null in giamGia
+
+            // Calculate total quantity where trangThai = 1
+            int tongSoLuong = listCTSP.stream()
+                    .filter(ctsp -> ctsp.getTrangThai() == 1) // Only include items with trangThai = 1
+                    .mapToInt(ChiTietSanPham::getSoLuong)
+                    .sum();
 
             return new SanPhamResponse(
                     id,
@@ -80,13 +96,15 @@
                     congDung,
                     tuoiMin,
                     tuoiMax,
+                    tongSoLuong,  // Include total quantity
                     ngayTao,
                     ngaySua,
+                    hdsd,
                     trangThai,
                     moTa,
                     danhMuc.getTen(),
                     thuongHieu.getTen(),
-                    giamGiaTen // Truyền giá trị giamGiaTen vào response
+                    giamGiaTen  // Pass the discount name to the response
             );
         }
 

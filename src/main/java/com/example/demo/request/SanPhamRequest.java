@@ -42,6 +42,10 @@
         @ValidInteger
         private Integer tuoiMax;
 
+        @NotBlank(message = "Hướng dẫn sử dụng không được để trống")
+        @Size(max = 255, message = "Hướng dẫn sử dụng không được vượt quá 255 ký tự")
+        private String hdsd;
+
         @NotNull(message = "Trạng thái không được để trống")
         @Min(value = 0, message = "Trạng thái không hợp lệ")
         @Max(value = 4, message = "Trạng thái không hợp lệ")
@@ -49,6 +53,7 @@
 
         @Size(max = 255, message = "Mô tả không được vượt quá 255 ký tự")
         private String moTa;
+
 
         @NotNull(message = "Danh mục không được để trống")
         private String idDanhMuc;

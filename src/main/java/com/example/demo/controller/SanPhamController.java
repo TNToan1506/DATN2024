@@ -38,6 +38,14 @@ public class SanPhamController {
         List<SanPham> sanPhamList = sanPhamRepository.findAll(sort);
         return  ResponseEntity.ok(sanPhamList.stream().map(SanPham::toResponse));
     }
+    @GetMapping("/getTotal")
+    public ResponseEntity<Integer> getTotal(@RequestParam("idSP") String idSP) {
+        Integer total = sanPhamRepository.getTotal(idSP);
+        if (total == null) {
+            total = 0; // Default to 0 if no result
+        }
+        return ResponseEntity.ok(total);
+    }
     @GetMapping("/phanTrang")
     public ResponseEntity<?>phanTrang(@RequestParam(name = "page",defaultValue = "0")Integer page){
         PageRequest pageRequest = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "ngayTao"));
@@ -71,7 +79,7 @@ public class SanPhamController {
         return ResponseEntity.ok(sanPham.toResponse());
     }
     @PostMapping("/add")
-    public ResponseEntity<?> add(@Valid @RequestBody SanPhamRequest sanPhamRequest) {
+    public ResponseEntity<?> add(@Valid @ModelAttribute SanPhamRequest sanPhamRequest) {
         SanPham sanPham = new SanPham();
         if (sanPhamRepository.getByName(sanPhamRequest.getTenSP().trim())!=null){
             return ResponseEntity.badRequest().body("Tên sản phẩm không được trùng!");
@@ -109,7 +117,7 @@ public class SanPhamController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@Valid @RequestBody SanPhamRequest sanPhamRequest) {
+    public ResponseEntity<?> update(@Valid @ModelAttribute SanPhamRequest sanPhamRequest) {
         String id = sanPhamRequest.getId();
         if (id == null || id.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("ID không được để trống.");

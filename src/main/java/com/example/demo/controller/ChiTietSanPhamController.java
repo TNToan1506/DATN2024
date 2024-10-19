@@ -43,8 +43,12 @@
         AnhCTSPRepository anhCTSPRepository;
 
         @GetMapping()
-        public ResponseEntity<?>getAll(){
-            List<ChiTietSanPham> chiTietSanPhams = chiTietSanPhamRepository.findAll(Sort.by(Sort.Order.desc("ngayTao")));
+        public ResponseEntity<?> getAll(@RequestParam(name = "idSP", required = false) String idSP) {
+            List<ChiTietSanPham> chiTietSanPhams=chiTietSanPhamRepository.getAllByIdSP(idSP, Sort.by(Sort.Order.desc("ngayTao")));
+            if (chiTietSanPhams.isEmpty()) {
+                return ResponseEntity.noContent().build(); // Trả về 204 No Content nếu không có sản phẩm nào
+            }
+
             List<ChiTietSanPhamResponse> responseList = chiTietSanPhams.stream()
                     .map(ChiTietSanPham::toChiTietSanPhamResponse)
                     .collect(Collectors.toList());
@@ -130,17 +134,17 @@
         }
 
         @GetMapping("/detail")
-        public ResponseEntity<?> detail(@RequestBody Map<String, String> request) {
-            String id = request.get("id"); // Lấy id từ body thay vì từ URL
+        public ResponseEntity<?> detail(@RequestParam String id) {
             if (id == null || id.isEmpty()) {
                 return ResponseEntity.badRequest().body("ID không được để trống.");
             }
-            if (id == null || chiTietSanPhamRepository.findById(id).isEmpty()) {
+            if (chiTietSanPhamRepository.findById(id).isEmpty()) {
                 return ResponseEntity.badRequest().body("Không tìm thấy CTSP có id: " + id);
             }
             return ResponseEntity.ok(chiTietSanPhamRepository.findById(id)
-                    .stream().map(ChiTietSanPham::toChiTietSanPhamResponse));
+                    .stream().map(ChiTietSanPham::toChiTietSanPhamResponse).findFirst().orElse(null));
         }
+
         @GetMapping("/detailByMa")
         public ResponseEntity<?> detailByMa(@RequestBody Map<String, String> request) {
             String ma = request.get("ma");
@@ -220,7 +224,7 @@
 
 
         @PutMapping("/update")
-        public ResponseEntity<?> update(@Valid @RequestBody ChiTietSanPhamRequest chiTietSanPhamRequest) {
+        public ResponseEntity<?> update(@Valid @ModelAttribute ChiTietSanPhamRequest chiTietSanPhamRequest) {
             String id = chiTietSanPhamRequest.getId();
             if (id == null || id.isEmpty()) {
                 return ResponseEntity.badRequest().body("ID không được để trống.");
@@ -229,10 +233,29 @@
             if (existingChiTietSanPham == null) {
                 return ResponseEntity.badRequest().body("Không tìm thấy chi tiết sản phẩm có id: " + id);
             }
+
+            // Xóa tất cả ảnh cũ nếu có yêu cầu thay đổi
+            if (chiTietSanPhamRequest.getLinkAnhList() != null && !chiTietSanPhamRequest.getLinkAnhList().isEmpty()) {
+                existingChiTietSanPham.getAnhCTSP().clear(); // Xóa ảnh cũ
+                for (String link : chiTietSanPhamRequest.getLinkAnhList()) {
+                    AnhCTSP anhCTSP = new AnhCTSP();
+                    anhCTSP.setLink(link);
+                    anhCTSP.setTrangThai(1);
+                    anhCTSP.setNgayTao(LocalDateTime.now());
+                    anhCTSP.setTen("Ảnh của " + existingChiTietSanPham.getMa());
+                    anhCTSP.setChiTietSanPham(existingChiTietSanPham);
+                    anhCTSPRepository.save(anhCTSP);
+                    existingChiTietSanPham.getAnhCTSP().add(anhCTSP);
+                }
+            }
+            if (chiTietSanPhamRequest.getLinkAnhList() == null ) {
+                existingChiTietSanPham.getAnhCTSP().clear(); // Xóa ảnh cũ
+            }
+
             BeanUtils.copyProperties(chiTietSanPhamRequest, existingChiTietSanPham, "id", "ma", "ngayTao");
             existingChiTietSanPham.setNgaySua(LocalDateTime.now());
-
             chiTietSanPhamRepository.save(existingChiTietSanPham);
+
             return ResponseEntity.ok("Cập nhật chi tiết sản phẩm thành công!");
         }
 

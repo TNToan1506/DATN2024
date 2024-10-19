@@ -27,9 +27,13 @@ public class SanPhamResponse {
 
     private Integer tuoiMax;
 
+    private Integer tongSoLuong;
+
     private LocalDateTime ngayTao;
 
     private LocalDateTime ngaySua;
+
+    private String hdsd;
 
     private Integer trangThai;
 

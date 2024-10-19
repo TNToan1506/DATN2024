@@ -35,10 +35,6 @@ public class ChiTietSanPham {
     @Column(name = "soNgaySuDung")
     private String soNgaySuDung;
 
-
-    @Column(name = "HDSD")
-    private String hdsd;
-
     @Column(name = "HSD")
     private LocalDateTime hsd;
 
@@ -85,7 +81,6 @@ public class ChiTietSanPham {
                 ma,
                 gia,
                 soNgaySuDung,
-                hdsd,
                 ngaySanXuat,
                 hsd,
                 ngayNhap,

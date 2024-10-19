@@ -14,4 +14,6 @@ public interface SanPhamRepository extends JpaRepository<SanPham,String> {
     SanPham getByMaAndId(@Param("ma")String ma,@Param("id")String id);
     @Query("SELECT sp FROM SanPham sp WHERE sp.tenSP = :ten AND sp.id <> :id")
     SanPham getByNameAndId(@Param("ten") String ten, @Param("id") String id);
+    @Query("SELECT SUM(ctsp.soLuong) FROM ChiTietSanPham ctsp JOIN ctsp.sanPham sp WHERE sp.id = :idSP")
+    Integer getTotal(@Param("idSP") String idSP);
 }

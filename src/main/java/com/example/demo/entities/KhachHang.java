@@ -11,13 +11,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "KHACHANG")
+@Table(name = "KHACHHANG")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class KhachHang {
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
     @Column(name = "MA")
