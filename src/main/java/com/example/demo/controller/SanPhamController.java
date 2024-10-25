@@ -9,15 +9,18 @@ import com.example.demo.request.SanPhamRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.web.PagedResourcesAssembler;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -38,18 +41,23 @@ public class SanPhamController {
         List<SanPham> sanPhamList = sanPhamRepository.findAll(sort);
         return  ResponseEntity.ok(sanPhamList.stream().map(SanPham::toResponse));
     }
-    @GetMapping("/getTotal")
-    public ResponseEntity<Integer> getTotal(@RequestParam("idSP") String idSP) {
-        Integer total = sanPhamRepository.getTotal(idSP);
-        if (total == null) {
-            total = 0; // Default to 0 if no result
-        }
-        return ResponseEntity.ok(total);
+    @GetMapping("/getByDanhMuc")
+    public ResponseEntity<?> getAll(@RequestParam(name = "idDanhMuc")String idDanhMuc) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "ngayTao");
+        List<SanPham> sanPhamList = sanPhamRepository.getByIdDanhMuc(idDanhMuc,sort);
+        return  ResponseEntity.ok(sanPhamList);
     }
     @GetMapping("/phanTrang")
-    public ResponseEntity<?>phanTrang(@RequestParam(name = "page",defaultValue = "0")Integer page){
-        PageRequest pageRequest = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "ngayTao"));
-        return ResponseEntity.ok(sanPhamRepository.findAll(pageRequest));
+    public ResponseEntity<?> phanTrang(@RequestParam(name = "page", defaultValue = "0") Integer page) {
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "ngayTao"));
+        Page<SanPham> sanPhamPage = sanPhamRepository.findAll(pageRequest);
+
+        // Tạo một đối tượng để trả về
+        Map<String, Object> response = new HashMap<>();
+        response.put("products", sanPhamPage.getContent().stream().map(SanPham::toResponse).collect(Collectors.toList()));
+        response.put("totalPages", sanPhamPage.getTotalPages());
+        response.put("totalElements", sanPhamPage.getTotalElements());
+        return ResponseEntity.ok(response);
     }
     @GetMapping("/detail")
     public ResponseEntity<?> detail(@RequestBody Map<String, String> body) {

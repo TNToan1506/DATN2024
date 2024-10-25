@@ -1,6 +1,9 @@
     package com.example.demo.entities;
 
     import com.example.demo.respone.SanPhamResponse;
+    import com.fasterxml.jackson.annotation.JsonBackReference;
+    import com.fasterxml.jackson.annotation.JsonIgnore;
+    import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
     import jakarta.persistence.*;
     import jakarta.validation.constraints.NotBlank;
     import jakarta.validation.constraints.Size;
@@ -18,6 +21,7 @@
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonIgnoreProperties({"danhMuc"})
     public class SanPham {
         @Id
         @Column(name = "id")
@@ -58,6 +62,7 @@
         private String moTa;
 
         @ManyToOne
+        @JsonBackReference // Bỏ qua trường này khi tuần tự hóa JSON để tránh vòng lặp
         @JoinColumn(name = "idDanhMuc")
         private DanhMuc danhMuc;
 
@@ -67,9 +72,11 @@
 
         @ManyToOne
         @JoinColumn(name = "idGiamGia")
+        @JsonBackReference // Ngăn chặn việc serialize ngược lại
         private GiamGia giamGia;
 
         @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
+        @JsonIgnore // Bỏ qua danh sách chi tiết sản phẩm khi tuần tự hóa
         private List<ChiTietSanPham> listCTSP = new ArrayList<>(); // Danh sách ảnh liên kết
 
         @PrePersist

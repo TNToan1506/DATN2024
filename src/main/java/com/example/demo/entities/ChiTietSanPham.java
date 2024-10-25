@@ -1,6 +1,7 @@
 package com.example.demo.entities;
 
 import com.example.demo.respone.ChiTietSanPhamResponse;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -59,6 +60,7 @@ public class ChiTietSanPham {
 
     @ManyToOne
     @JoinColumn(name = "idSP")
+    @JsonIgnore // Bỏ qua tham chiếu này khi serialize
     SanPham sanPham;
 
     @OneToMany(mappedBy = "chiTietSanPham", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -75,7 +77,12 @@ public class ChiTietSanPham {
         List<String> linkAnhList = anhCTSP != null
                 ? anhCTSP.stream().map(AnhCTSP::getLink).collect(Collectors.toList())
                 : new ArrayList<>(); // Trả về danh sách rỗng nếu không có hình ảnh
-
+        if (sanPham.getGiamGia() != null &&
+                sanPham.getGiamGia().getNgayKetThuc().isAfter(LocalDateTime.now()) &&
+                sanPham.getGiamGia().getNgayBatDau().isBefore(LocalDateTime.now())) {
+            double giaGiam = Double.valueOf(sanPham.getGiamGia().getGiaGiam()) / 100;
+            gia = String.valueOf(Double.valueOf(this.gia) * (1 - giaGiam));
+        }
         return new ChiTietSanPhamResponse(
                 id,
                 ma,

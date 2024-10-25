@@ -10,6 +10,8 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -65,6 +67,13 @@ public class GiamGia {
     @Column(name = "trangThai")
     private Integer trangThai;
 
+    @Size(max = 255, message = "Mô tả không được vượt quá 255 ký tự")
+    @Column(name = "moTa")
+    private String moTa;
+
+    @OneToMany(mappedBy = "giamGia", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JsonIgnore
+    private List<SanPham> listSanPham = new ArrayList<>();
     @PrePersist
     public void prePersist() {
         if (this.id == null) {

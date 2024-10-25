@@ -2,12 +2,16 @@ package com.example.demo.entities;
 
 import com.example.demo.validation.ValidInteger;
 import com.example.demo.validation.ValidLocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,8 +20,8 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Bỏ qua proxy của Hibernate
-
+//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Bỏ qua proxy của Hibernate
+@JsonIgnoreProperties({"listSanPham"})
 public class DanhMuc {
     @Id
     @Column(name = "ID")
@@ -41,6 +45,10 @@ public class DanhMuc {
     @Column(name = "NGAYSUA")
     @ValidLocalDateTime
     private LocalDateTime ngaySua;
+
+    @OneToMany(mappedBy = "danhMuc", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<SanPham> listSanPham = new ArrayList<>(); // Danh sách ảnh liên kết
 
 
     @NotNull(message = "Trạng thái không được để trống")
